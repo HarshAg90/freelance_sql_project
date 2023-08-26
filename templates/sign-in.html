@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/png" href="static/images/logo-16x16.png" />
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Social Awareness</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Major+Mono+Display" rel="stylesheet">
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@1.9.2/css/boxicons.min.css' rel='stylesheet'>
+
+    <!-- Styles -->
+    <link href="static/css/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/style.css" rel="stylesheet">
+    <link href="static/css/components.css" rel="stylesheet">
+    <link href="static/css/auth.css" rel="stylesheet">
+    <link href="static/css/forms.css" rel="stylesheet">
+    <link href="static/css/media.css" rel="stylesheet">
+
+    <script src="{{url_for('static',filename='new/js/jquery-3.3.1.js')}}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+
+<body>
+    <div class="row ht-100v flex-row-reverse no-gutters">
+        <div class="col-md-6 d-flex justify-content-center align-items-center">
+            <div class="signup-form">
+                <div class="auth-logo text-center mb-5">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <img src="static/images/logo-64x64.png" class="logo-img" alt="Logo">
+                        </div>
+                        <div class="col-md-10">
+                            <p>Social Awareness</p>
+                            <span>Design System</span>
+                        </div>
+                    </div>
+                </div>
+                <form class="pt-5">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="username" placeholder="Username">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <input type="password" class="form-control" id="loginpassword" placeholder="Password">
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <a href="forgot-password.html">Forgot password?</a>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="custom-control material-checkbox">
+                                <input type="checkbox" class="material-control-input">
+                                <span class="material-control-indicator"></span>
+                                <span class="material-control-description">Remember Me</span>
+                            </label>
+                        </div>
+                        <div class="col-md-6 text-right">
+                            <div class="form-group">
+                                <button type="submit" id="btnlogin" class="btn btn-primary sign-up">Sign In</button>
+                            </div>
+                        </div>
+                        <div class="col-md-12 text-center mt-4">
+                            <p class="text-muted">Start using your fingerprint</p>
+                            <a href="#" class="btn btn-outline-primary btn-sm sign-up" data-toggle="modal"
+                                data-target="#fingerprintModal">Use Fingerprint</a>
+                        </div>
+                        <div class="col-md-12 text-center mt-5">
+                            <span class="go-login">Not yet a member? <a href="/SignUp">Sign Up</a></span>
+                        </div>
+                        <div class="col-md-12 text-center">
+                            <span class="go-login">Admin Sign In? <a href="/AdminSignIn">Sign In</a></span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-6 auth-bg-image d-flex justify-content-center align-items-center">
+            <div class="auth-left-content mt-5 mb-5 text-center">
+                <div class="text-white mt-5 mb-5">
+                    <h2 class="create-account mb-3">Welcome Back</h2>
+                    <p>Thank you for joining. Updates and new features are released daily.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $('#btnlogin').click(function () {
+            var name = $('#username').val().toString();
+            var password = $('#loginpassword').val().toString();
+            var data = { username: name, password: password };
+            $.ajax({
+                type: "POST",
+                url: "SignIn",
+                data: data,
+                success: function (data) {
+                    if (data == 'success') {
+                        window.location.replace("/home");
+                        $("#btnlogin").prop("disabled", false);
+                    }
+                    else {
+                        alert("Invalid username and password!")
+                    }
+                },
+                error: function (e) {
+                    console.log("ERROR : ", e);
+                    $("#btnlogin").prop("disabled", false);
+                }
+            });
+            return false;
+        })
+    </script>
+
+    <!-- Modal -->
+    <div class="modal fade fingerprint-modal" id="fingerprintModal" tabindex="-1" role="dialog"
+        aria-labelledby="fingerprintModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <h3 class="text-muted display-5">Place your Finger on the Device Now</h3>
+                    <img src="static/images/icons/auth-fingerprint.png" alt="Fingerprint">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core -->
+    <script src="static/js/jquery/jquery-3.3.1.min.js"></script>
+    <script src="static/js/popper/popper.min.js"></script>
+    <script src="static/js/bootstrap/bootstrap.min.js"></script>
+    <!-- Optional -->
+    <script src="static/js/app.js"></script>
+</body>
+
+</html>
