@@ -61,6 +61,7 @@ def home():
     username = session.get("userusername")
     print(username)
     
+    
     cursor.execute("SELECT profilepic FROM userdetails WHERE username=%s",(username))
     profilepiclist = cursor.fetchone()
     profilepic = profilepiclist[0]
@@ -200,7 +201,7 @@ def SignIn():
         cursor.execute('SELECT * FROM userdetails WHERE username = %s AND password = %s', (username, password))
         count = cursor.rowcount
         # except:
-        print("an error occured while executing sql code ================")
+        # print("an error occured while executing sql code ================")
         # count = 0
         if count == 1:   
             session['userusername'] = username             
@@ -240,7 +241,7 @@ def addPost():
         
         user = session.get("userusername")
             
-        # try:
+        try:
             # posttext = request.form['posttext']
             # f2= request.files['postimage']
             
@@ -251,7 +252,7 @@ def addPost():
             
             # current_time = datetime.now()  
             # time_stamp = current_time.timestamp() 
-            # date_time = datetime.fromtimestamp(time_stamp)
+            # date_time = datetime.fromtimestamp(time_stamp)s
             # str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
             
             # sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
@@ -259,47 +260,48 @@ def addPost():
             # cursor.execute(sql1,val1)
             # con.commit()                 
             # return redirect(url_for('home'))
-        posttext = request.form['posttext']
-        f2 = request.files['postimage']
-        
-        # Generate a unique filename (e.g., using a timestamp)
-        import time
-        filename = f"{int(time.time())}_{secure_filename(f2.filename)}"
-        
-        # Create a blob (object) in Firebase Storage
-        blob = bucket.blob(filename)
-
-        # Upload the image file to Firebase Storage
-        blob.upload_from_string(f2.read(), content_type=f2.content_type)
-
-        # Get the public URL of the uploaded image
-        postimage_url = blob.public_url
-        print(postimage_url)
-        current_time = datetime.now()  
-        time_stamp = current_time.timestamp() 
-        date_time = datetime.fromtimestamp(time_stamp)
-        str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
-        
-        sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
-        val1 = (user, postimage_url, posttext, str_date_time)
-        cursor.execute(sql1, val1)
-        con.commit()                 
-        return redirect(url_for('home'))
-        # except:            
-        #     print('UPLOAD FAILEDDDDDDDDDDDDD')
-        #     print('UPLOAD FAILEDDDDDDDDDDDDDd')
-        #     posttext = request.form['posttext']
+            posttext = request.form['posttext']
+            f2 = request.files['postimage']
             
-        #     current_time = datetime.now()  
-        #     time_stamp = current_time.timestamp() 
-        #     date_time = datetime.fromtimestamp(time_stamp)
-        #     str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
+            # Generate a unique filename (e.g., using a timestamp)
+            import time
+            filename = f"{int(time.time())}_{secure_filename(f2.filename)}"
             
-        #     sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
-        #     val1 = (user, "None", posttext, str_date_time)
-        #     cursor.execute(sql1,val1)
-        #     con.commit()                 
-        #     return redirect(url_for('home'))
+            # Create a blob (object) in Firebase Storage
+            blob = bucket.blob(filename)
+
+            # Upload the image file to Firebase Storage
+            blob.upload_from_string(f2.read(), content_type=f2.content_type)
+
+            blob.make_public()
+            # Get the public URL of the uploaded image
+            postimage_url = blob.public_url
+            print(postimage_url)
+            current_time = datetime.now()  
+            time_stamp = current_time.timestamp() 
+            date_time = datetime.fromtimestamp(time_stamp)
+            str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
+            
+            sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
+            val1 = (user, postimage_url, posttext, str_date_time)
+            cursor.execute(sql1, val1)
+            con.commit()
+            return redirect(url_for('home'))
+        except:            
+            print('UPLOAD FAILEDDDDDDDDDDDDD')
+            print('UPLOAD FAILEDDDDDDDDDDDDDd')
+            posttext = request.form['posttext']
+            
+            current_time = datetime.now()  
+            time_stamp = current_time.timestamp() 
+            date_time = datetime.fromtimestamp(time_stamp)
+            str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
+            
+            sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
+            val1 = (user, "None", posttext, str_date_time)
+            cursor.execute(sql1,val1)
+            con.commit()                 
+            return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():
@@ -513,6 +515,7 @@ def updateProfile():
         # Upload the image file to Firebase Storage
         blob.upload_from_string(f2.read(), content_type=f2.content_type)
 
+        blob.make_public()
         # Get the public URL of the uploaded image
         image_url = blob.public_url
         print(image_url)
