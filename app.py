@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for
+from flask import Flask, session, redirect, url_for, jsonify
 from flask import render_template,request
 import pymysql
 from werkzeug.utils import secure_filename
@@ -53,6 +53,9 @@ cursor = con.cursor()
 def index():
     return render_template('sign-in.html')  
 
+@app.route("/test")
+def testing():
+        return jsonify({"status":"working"}),200
 @app.route('/home')
 def home():    
     username = session.get("userusername")
