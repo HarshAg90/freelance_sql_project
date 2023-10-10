@@ -20,6 +20,19 @@ app.secret_key = 'any random string'
 socailawareness
 admin12345678
 '''
+
+import firebase_admin
+from firebase_admin import credentials, storage
+
+# Initialize Firebase with your credentials JSON file
+cred = credentials.Certificate("storage.json")
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'auth-testing-d2b78.appspot.com'
+})
+
+# Create a reference to the Firebase Storage bucket
+bucket = storage.bucket()
+
 def dbConnection():
     try:
         connection = pymysql.connect(host="socailawareness-sql.cxkbcysa8pim.eu-north-1.rds.amazonaws.com", user="adminn", password="admin12345678", database="socailawareness")
@@ -180,9 +193,12 @@ def SignIn():
         
         username = details['username']
         password = details['password']
-        
+        # try:
         cursor.execute('SELECT * FROM userdetails WHERE username = %s AND password = %s', (username, password))
         count = cursor.rowcount
+        # except:
+        print("an error occured while executing sql code ================")
+        # count = 0
         if count == 1:   
             session['userusername'] = username             
             return "success" 
@@ -221,38 +237,66 @@ def addPost():
         
         user = session.get("userusername")
             
-        try:
-            posttext = request.form['posttext']
-            f2= request.files['postimage']
+        # try:
+            # posttext = request.form['posttext']
+            # f2= request.files['postimage']
             
-            filename_secure = secure_filename(f2.filename)
+            # filename_secure = secure_filename(f2.filename)
             
-            pathlib.Path(app.config['UPLOAD_FOLDER'], user).mkdir(exist_ok=True)
-            f2.save(os.path.join(app.config['UPLOAD_FOLDER'],user, filename_secure))
+            # pathlib.Path(app.config['UPLOAD_FOLDER'], user).mkdir(exist_ok=True)
+            # f2.save(os.path.join(app.config['UPLOAD_FOLDER'],user, filename_secure))
             
-            current_time = datetime.now()  
-            time_stamp = current_time.timestamp() 
-            date_time = datetime.fromtimestamp(time_stamp)
-            str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
+            # current_time = datetime.now()  
+            # time_stamp = current_time.timestamp() 
+            # date_time = datetime.fromtimestamp(time_stamp)
+            # str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
             
-            sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
-            val1 = (user, 'static/posts/'+user+'/'+filename_secure, posttext, str_date_time)
-            cursor.execute(sql1,val1)
-            con.commit()                 
-            return redirect(url_for('home'))
-        except:            
-            posttext = request.form['posttext']
+            # sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
+            # val1 = (user, 'static/posts/'+user+'/'+filename_secure, posttext, str_date_time)
+            # cursor.execute(sql1,val1)
+            # con.commit()                 
+            # return redirect(url_for('home'))
+        posttext = request.form['posttext']
+        f2 = request.files['postimage']
+        
+        # Generate a unique filename (e.g., using a timestamp)
+        import time
+        filename = f"{int(time.time())}_{secure_filename(f2.filename)}"
+        
+        # Create a blob (object) in Firebase Storage
+        blob = bucket.blob(filename)
+
+        # Upload the image file to Firebase Storage
+        blob.upload_from_string(f2.read(), content_type=f2.content_type)
+
+        # Get the public URL of the uploaded image
+        postimage_url = blob.public_url
+        print(postimage_url)
+        current_time = datetime.now()  
+        time_stamp = current_time.timestamp() 
+        date_time = datetime.fromtimestamp(time_stamp)
+        str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
+        
+        sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
+        val1 = (user, postimage_url, posttext, str_date_time)
+        cursor.execute(sql1, val1)
+        con.commit()                 
+        return redirect(url_for('home'))
+        # except:            
+        #     print('UPLOAD FAILEDDDDDDDDDDDDD')
+        #     print('UPLOAD FAILEDDDDDDDDDDDDDd')
+        #     posttext = request.form['posttext']
             
-            current_time = datetime.now()  
-            time_stamp = current_time.timestamp() 
-            date_time = datetime.fromtimestamp(time_stamp)
-            str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
+        #     current_time = datetime.now()  
+        #     time_stamp = current_time.timestamp() 
+        #     date_time = datetime.fromtimestamp(time_stamp)
+        #     str_date_time = date_time.strftime("%d-%m-%Y %H:%M")
             
-            sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
-            val1 = (user, "None", posttext, str_date_time)
-            cursor.execute(sql1,val1)
-            con.commit()                 
-            return redirect(url_for('home'))
+        #     sql1 = "INSERT INTO poststoadmin(uploader, postimage, posttext, timestamp) VALUES (%s, %s, %s, %s);"
+        #     val1 = (user, "None", posttext, str_date_time)
+        #     cursor.execute(sql1,val1)
+        #     con.commit()                 
+        #     return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():
@@ -444,18 +488,33 @@ def updateProfile():
         qualification = details['qualification']
         age = details['age']         
             
-        filename_secure = secure_filename(f2.filename)
+        # filename_secure = secure_filename(f2.filename)
         
-        pathlib.Path(app.config['UPLOAD_FOLDER'], username).mkdir(exist_ok=True)
-        f2.save(os.path.join(app.config['UPLOAD_FOLDER'],username,filename_secure))
+        # pathlib.Path(app.config['UPLOAD_FOLDER'], username).mkdir(exist_ok=True)
+        # f2.save(os.path.join(app.config['UPLOAD_FOLDER'],username,filename_secure))
 
-        image = Image.open('static/posts/'+username+'/'+filename_secure)
+        # image = Image.open('static/posts/'+username+'/'+filename_secure)
         
-        sunset_resized = image.resize((853, 853))
-        sunset_resized.save('static/posts/'+username+'/'+filename_secure)
+        # sunset_resized = image.resize((853, 853))
+        # sunset_resized.save('static/posts/'+username+'/'+filename_secure)
         
+        # sql2 = "UPDATE userdetails SET profilepic=%s WHERE username = %s"
+        # val2 = ('static/posts/'+username+'/'+filename_secure,username)
+        # Generate a unique filename (e.g., using a timestamp)
+        import time
+        filename = f"{int(time.time())}_{secure_filename(f2.filename)}"
+
+        # Create a blob (object) in Firebase Storage
+        blob = bucket.blob(filename)
+
+        # Upload the image file to Firebase Storage
+        blob.upload_from_string(f2.read(), content_type=f2.content_type)
+
+        # Get the public URL of the uploaded image
+        image_url = blob.public_url
+        print(image_url)
         sql2 = "UPDATE userdetails SET profilepic=%s WHERE username = %s"
-        val2 = ('static/posts/'+username+'/'+filename_secure,username)
+        val2 = (image_url, username)
         cursor.execute(sql2,val2)
         con.commit()
         
@@ -513,7 +572,7 @@ def main():
     app.run('0.0.0.0', port=8000)
 
 
-# if __name__ == '__main__':
-#     # app.run(debug=True)
-#     # app.run(debug=True, host='0.0.0.0', port=8000)
-#     main()
+if __name__ == '__main__':
+    # app.run(debug=True)
+    # app.run(debug=True, host='0.0.0.0', port=8000)
+    main()
