@@ -35,7 +35,8 @@ bucket = storage.bucket()
 
 def dbConnection():
     try:
-        connection = pymysql.connect(host="socailawareness-sql.cxkbcysa8pim.eu-north-1.rds.amazonaws.com", user="adminn", password="admin12345678", database="socailawareness")
+        connection = pymysql.connect(host="socialawareness.cuc6u4kypj0l.ap-south-1.rds.amazonaws.com", user="admin", password="socialawareness", database="socailawareness")
+        print("connection",connection)
         return connection
     except:
         print("Something went wrong in database Connection")
